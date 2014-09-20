@@ -3,7 +3,7 @@ namespace :warehouse do
   task :recreate => :environment do
     abcs = ActiveRecord::Base.configurations
     ActiveRecord::Base.establish_connection(abcs[Rails.env])
-    puts "Recreating #{ActiveRecord::Base.connection.current_database}"
+    #puts "Recreating #{ActiveRecord::Base.connection.current_database}"
     ActiveRecord::Base.connection.recreate_database(ActiveRecord::Base.connection.current_database)
     ActiveRecord::Base.connection.reconnect!
   end
@@ -18,14 +18,14 @@ namespace :warehouse do
     
     if ENV['TRUNCATE']
       puts "Truncating date dimension"
-      DateDimension.connection.execute("TRUNCATE TABLE date_dimension")
+      ActiveWarehouse::DateDimension.connection.execute("TRUNCATE TABLE date_dimension")
     end
     
     puts "Building date dimension"
 
     ddb = ActiveWarehouse::Builder::DateDimensionBuilder.new(start_date, end_date)
     ddb.build.each do |record|
-      dd = DateDimension.new
+      dd = ActiveWarehouse::DateDimension.new
       record.each do |key,value|
         dd.send("#{key}=".to_sym, value) if dd.respond_to?(key)
       end
